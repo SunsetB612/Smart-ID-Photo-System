@@ -22,20 +22,20 @@
         font-family: "Helvetica Neue", Arial, sans-serif;
       }
 
-      /* 导航栏 */
       .navbar {
         background-color: #fff;
       }
+
       .navbar-brand {
         color: var(--brand-color) !important;
         font-weight: 600;
       }
+
       .navbar-nav .nav-link.active {
         color: var(--brand-color) !important;
         font-weight: 500;
       }
 
-      /* 按钮样式 */
       .btn-custom {
         background-color: var(--brand-color);
         color: #fff;
@@ -43,11 +43,11 @@
         border-radius: 30px;
         transition: background-color 0.3s;
       }
+
       .btn-custom:hover {
         background-color: #3f7ec7;
       }
 
-      /* 主体卡片样式 */
       .card {
         margin: 0 auto;
         max-width: 900px;
@@ -71,15 +71,23 @@
         color: #dc3545;
         font-weight: 600;
       }
+
+      .button-center-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: row;
+        margin-top: 40px;
+      }
+
+      .button-center-wrapper .btn {
+        margin: 0 12px;
+      }
     </style>
   </head>
 
   <body>
-    <!-- 保留之前的导航栏 -->
-    <nav
-      class="navbar navbar-expand-lg navbar-light shadow-sm fixed-top"
-      aria-label="主导航栏"
-    >
+    <nav class="navbar navbar-expand-lg navbar-light shadow-sm fixed-top">
       <div class="container">
         <a class="navbar-brand" href="/">智能证件照处理工具</a>
         <button
@@ -95,27 +103,16 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav ms-auto">
-            <li class="nav-item">
-              <a class="nav-link" href="/">首页</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/background">换背景</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/crop">裁剪</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/watermark">加水印</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link active" href="/portrait_cutout">人像抠图</a>
-            </li>
+            <li class="nav-item"><a class="nav-link" href="/">首页</a></li>
+            <li class="nav-item"><a class="nav-link" href="/background">换背景</a></li>
+            <li class="nav-item"><a class="nav-link" href="/crop">裁剪</a></li>
+            <li class="nav-item"><a class="nav-link" href="/watermark">加水印</a></li>
+            <li class="nav-item"><a class="nav-link active" href="/portrait_cutout">人像抠图</a></li>
           </ul>
         </div>
       </div>
     </nav>
 
-    <!-- 主体内容，换成你提供的人像抠图页面 -->
     <div class="container mt-5 mb-5">
       <div class="card p-4">
         <h1 class="text-center mb-4">人像抠图（去背景）</h1>
@@ -140,19 +137,27 @@
 
         {% if error %}
         <p class="error text-center mb-3">{{ error }}</p>
-        {% endif %} {% if original_img or cutout_img %}
+        {% endif %}
+
+        {% if original_img or cutout_img %}
         <div class="row text-center">
           {% if original_img %}
           <div class="col-md-6 mb-4 mb-md-0">
             <h2>原图</h2>
             <img src="{{ original_img }}" alt="原图" />
           </div>
-          {% endif %} {% if cutout_img %}
+          {% endif %}
+          {% if cutout_img %}
           <div class="col-md-6">
             <h2>抠图结果（带透明背景）</h2>
             <img src="{{ cutout_img }}" alt="抠图结果" />
           </div>
           {% endif %}
+        </div>
+
+        <div class="button-center-wrapper">
+          <a href="/portrait_cutout" class="btn btn-outline-secondary">重新选择图片</a>
+          <a href="{{ cutout_img }}" download="cutout.png" class="btn btn-custom">下载图片</a>
         </div>
         {% endif %}
       </div>

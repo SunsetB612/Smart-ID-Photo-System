@@ -187,7 +187,7 @@
             class="form-control form-control-color"
             name="bg_color"
             id="customColor"
-            value="#ffffff"
+            value="#4fb083"
           />
         </div>
       </form>
@@ -255,7 +255,9 @@
       const fileInput = document.getElementById("fileInput");
       const loadingDiv = document.getElementById("loading");
       const colorSwatches = document.querySelectorAll(".color-swatch");
-      const customColor = document.getElementById("customColor");
+      const customColorContainer =
+        document.getElementById("customColor").parentElement;
+      let customColor = document.getElementById("customColor");
 
       // 点击上传区域打开文件选择器
       uploadArea.addEventListener("click", () => {
@@ -284,10 +286,30 @@
       // 常用颜色选择
       colorSwatches.forEach((swatch) => {
         swatch.addEventListener("click", () => {
+          // 高亮选中色块
           colorSwatches.forEach((s) => s.classList.remove("active"));
           swatch.classList.add("active");
+
           const selectedColor = swatch.getAttribute("data-color");
-          customColor.value = selectedColor;
+
+          // 替换 <input type="color">，强制刷新 UI
+          const newColorInput = document.createElement("input");
+          newColorInput.type = "color";
+          newColorInput.className = "form-control form-control-color";
+          newColorInput.name = "bg_color";
+          newColorInput.id = "customColor";
+          newColorInput.value = selectedColor;
+
+          // 替换 DOM
+          customColorContainer.replaceChild(newColorInput, customColor);
+
+          // 重新绑定监听器
+          newColorInput.addEventListener("input", () => {
+            colorSwatches.forEach((s) => s.classList.remove("active"));
+          });
+
+          // 更新 customColor 引用
+          customColor = newColorInput;
         });
       });
 
@@ -300,6 +322,50 @@
       function reselectImage() {
         window.location.href = "/background";
       }
+
+      // 拖拽相关事件
+      uploadArea.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        uploadArea.classList.add("dragover");
+      });
+
+      uploadArea.addEventListener("dragleave", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        uploadArea.classList.remove("dragover");
+      });
+
+      uploadArea.addEventListener("drop", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        uploadArea.classList.remove("dragover");
+
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+          fileInput.files = files;
+
+          loadingDiv.style.display = "block";
+          const form = document.getElementById("bgForm");
+          const formData = new FormData(form);
+          formData.set("bg_color", customColor.value);
+          formData.set("file", files[0]);
+          formData.set("bg_color", customColor.value);
+
+          fetch("/background", {
+            method: "POST",
+            body: formData,
+          })
+            .then((response) => response.text())
+            .then((data) => {
+              document.body.innerHTML = data;
+            })
+            .catch((error) => {
+              console.error(error);
+              alert("出错了，请重试！");
+            });
+        }
+      });
     </script>
   </body>
 </html>
