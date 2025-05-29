@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, send_file, jsonify,url_for
+from flask import Flask, render_template, request, send_file, jsonify
 from PIL import Image, ImageDraw, ImageFont
 import os
 import cv2
@@ -270,63 +270,39 @@ def model_status():
         'fallback': 'rembg'
     }
     return jsonify(status)
-
 @app.route('/portrait_cutout', methods=['GET', 'POST'])
 def portrait_cutout():
     if request.method == 'POST':
         file = request.files.get('file')
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-
-            # 这里直接用static/uploads目录，不要重复加uploads
-            upload_folder = app.config['UPLOAD_FOLDER']  # static/uploads/
-            cutout_folder = os.path.join('static', 'cutouts')  # static/cutouts
-            os.makedirs(upload_folder, exist_ok=True)
-            os.makedirs(cutout_folder, exist_ok=True)
-
-            filepath = os.path.join(upload_folder, filename)
+            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
 
+            # 调用背景去除或抠图函数
             result_img = remove_background(filepath)
             if result_img is None:
                 return render_template('portrait_cutout.html', error='背景去除失败')
 
-            name, ext = os.path.splitext(filename)
-            if ext.lower() not in ['.png', '.jpg', '.jpeg']:
-                ext = '.png'
+            # 保存结果图，方便前端展示
+            result_path = os.path.join(app.config['UPLOAD_FOLDER'], 'cutout_' + filename)
+            
+            # 如果图片带透明通道，保存PNG；否则保存JPEG
+            if result_img.mode == 'RGBA':
+                # 保存为PNG格式（保留透明）
+                # 修改result_path后缀为png
+                base, ext = os.path.splitext(result_path)
+                result_path = base + '.png'
+                result_img.save(result_path, 'PNG')
+            else:
+                # 非RGBA直接保存JPEG
+                result_img.save(result_path, 'JPEG')
 
-            result_filename = f'cutout{ext}'
-            result_path = os.path.join(cutout_folder, result_filename)
-
-            pil_format = 'JPEG' if ext.lower() in ['.jpg', '.jpeg'] else 'PNG'
-            result_img.save(result_path, format=pil_format)
-
-            original_img_url = url_for('static', filename=f'uploads/{filename}')
-            cutout_img_url = url_for('static', filename=f'cutouts/{result_filename}')
-            download_url = url_for('download_cutout', filename=result_filename)
-
-            return render_template(
-                'portrait_cutout.html',
-                original_img=original_img_url,
-                cutout_img=cutout_img_url,
-                download_url=download_url
-            )
+            return render_template('portrait_cutout.html',
+                                   original_img='/' + filepath.replace('\\', '/'),
+                                   cutout_img='/' + result_path.replace('\\', '/'))
 
     return render_template('portrait_cutout.html')
-
-
-@app.route('/download_cutout/<filename>')
-def download_cutout(filename):
-    filename = secure_filename(filename)
-    cutout_folder = os.path.join(app.config['UPLOAD_FOLDER'], 'cutouts')
-    file_path = os.path.join(cutout_folder, filename)
-    if os.path.exists(file_path):
-        ext = filename.rsplit('.', 1)[1].lower() if '.' in filename else 'png'
-        mime_type = 'image/jpeg' if ext in ['jpg', 'jpeg'] else f'image/{ext}'
-        return send_file(file_path, mimetype=mime_type, as_attachment=True, download_name=filename)
-    else:
-        return "文件不存在", 404
-
 
 def change_background(filepath, bg_color):
     """更改背景颜色（保持兼容性）"""
