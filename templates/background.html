@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>证件照换背景 - 智能证件照处理工具</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link
+      href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.1.3/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --brand-color: #4a90e2;
+      }
+      body {
+        background-color: #f8f9fa;
+        padding-top: 70px;
+        font-family: "Helvetica Neue", Arial, sans-serif;
+      }
+
+      .navbar {
+        background-color: #fff;
+      }
+      .navbar-brand {
+        color: var(--brand-color) !important;
+        font-weight: 600;
+      }
+      .navbar-nav .nav-link.active {
+        color: var(--brand-color) !important;
+        font-weight: 500;
+      }
+
+      .btn-custom {
+        background-color: var(--brand-color);
+        color: #fff;
+        border: none;
+        border-radius: 30px;
+        transition: background-color 0.3s;
+      }
+      .btn-custom:hover {
+        background-color: #3f7ec7;
+      }
+
+      .upload-area {
+        border: 2px dashed #ccc;
+        border-radius: 0.5rem;
+        padding: 2rem;
+        text-align: center;
+        color: #999;
+        transition: background-color 0.3s, border-color 0.3s;
+        cursor: pointer;
+      }
+      .upload-area.dragover {
+        background-color: #e9f7ef;
+        border-color: #28a745;
+        color: #28a745;
+      }
+
+      .color-swatches {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+      }
+      .color-swatch {
+        width: 30px;
+        height: 30px;
+        border-radius: 0.25rem;
+        cursor: pointer;
+        border: 2px solid #fff;
+        box-shadow: 0 0 0 1px #ccc inset;
+      }
+      .color-swatch.active {
+        border-color: var(--brand-color);
+        box-shadow: 0 0 0 2px var(--brand-color) inset;
+      }
+
+      .result-img {
+        max-width: 100%;
+        border: 1px solid #ddd;
+        border-radius: 0.25rem;
+      }
+
+      .loader {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 2s linear infinite;
+        margin: 0 auto;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- 顶部导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-light shadow-sm fixed-top">
+      <div class="container">
+        <a class="navbar-brand" href="/">智能证件照处理工具</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="切换导航"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="/">首页</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="/background">换背景</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/crop">裁剪</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/watermark">加水印</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container mt-5">
+      <h2 class="text-center mb-4 fw-bold">证件照换底色工具</h2>
+
+      <!-- 上传/换底色表单 -->
+      <form method="POST" enctype="multipart/form-data" id="bgForm">
+        <div class="mb-3 upload-area" id="uploadArea">
+          <p class="mb-0">将证件照拖入此处或点击上传</p>
+          <input
+            type="file"
+            name="file"
+            id="fileInput"
+            accept="image/*"
+            style="display: none"
+            required
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold">常用颜色:</label>
+          <div class="color-swatches" id="commonColors">
+            <div
+              class="color-swatch"
+              style="background-color: #ffffff"
+              data-color="#ffffff"
+            ></div>
+            <div
+              class="color-swatch"
+              style="background-color: #438edb"
+              data-color="#438edb"
+            ></div>
+            <div
+              class="color-swatch"
+              style="background-color: #ff0000"
+              data-color="#ff0000"
+            ></div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-bold">自定义颜色:</label>
+          <input
+            type="color"
+            class="form-control form-control-color"
+            name="bg_color"
+            id="customColor"
+            value="#ffffff"
+          />
+        </div>
+      </form>
+
+      <!-- 处理中的动画 -->
+      <div id="loading" class="text-center" style="display: none">
+        <div class="loader"></div>
+        <p class="mt-2">正在处理图片...</p>
+      </div>
+
+      <!-- 显示处理结果 -->
+      {% if final_img %}
+      <hr class="my-5" />
+      <div class="row text-center">
+        <div class="col">
+          <h5 class="fw-bold">证件照原图</h5>
+          <img src="{{ original_img }}" alt="原图" class="result-img" />
+        </div>
+        <div class="col">
+          <h5 class="fw-bold">已去除背景</h5>
+          <img src="{{ removed_bg_img }}" alt="去除背景图" class="result-img" />
+        </div>
+        <div class="col">
+          <h5 class="fw-bold">最终效果图</h5>
+          <img src="{{ final_img }}" alt="最终效果图" class="result-img" />
+        </div>
+      </div>
+
+      <!-- 重新选择按钮 -->
+      <div class="text-center mt-3">
+        <button
+          id="reselect-button"
+          onclick="reselectImage()"
+          class="btn btn-secondary btn-sm"
+          style="border-radius: 30px"
+        >
+          重新选择图片
+        </button>
+      </div>
+
+      <div class="text-center mt-3">
+        <a
+          href="{{ removed_bg_img }}"
+          download
+          class="btn btn-success btn-sm me-2"
+          style="border-radius: 30px"
+        >
+          下载已去除背景图
+        </a>
+        <a
+          href="{{ final_img }}"
+          download
+          class="btn btn-custom btn-sm"
+          style="min-width: 140px"
+        >
+          下载最终效果图
+        </a>
+      </div>
+      {% endif %}
+    </div>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+    <script>
+      const uploadArea = document.getElementById("uploadArea");
+      const fileInput = document.getElementById("fileInput");
+      const loadingDiv = document.getElementById("loading");
+      const colorSwatches = document.querySelectorAll(".color-swatch");
+      const customColor = document.getElementById("customColor");
+
+      // 点击上传区域打开文件选择器
+      uploadArea.addEventListener("click", () => {
+        fileInput.click();
+      });
+
+      // 处理文件上传
+      fileInput.addEventListener("change", () => {
+        loadingDiv.style.display = "block";
+        const form = document.getElementById("bgForm");
+        const formData = new FormData(form);
+        fetch("/background", {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => response.text())
+          .then((data) => {
+            document.body.innerHTML = data;
+          })
+          .catch((error) => {
+            console.error(error);
+            alert("出错了，请重试！");
+          });
+      });
+
+      // 常用颜色选择
+      colorSwatches.forEach((swatch) => {
+        swatch.addEventListener("click", () => {
+          colorSwatches.forEach((s) => s.classList.remove("active"));
+          swatch.classList.add("active");
+          const selectedColor = swatch.getAttribute("data-color");
+          customColor.value = selectedColor;
+        });
+      });
+
+      // 自定义颜色修改时清除高亮
+      customColor.addEventListener("input", () => {
+        colorSwatches.forEach((s) => s.classList.remove("active"));
+      });
+
+      // 重新选择图片功能
+      function reselectImage() {
+        window.location.href = "/background";
+      }
+    </script>
+  </body>
+</html>

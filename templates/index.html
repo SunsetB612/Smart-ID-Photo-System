@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>智能证件照处理工具 - 首页</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link
+      href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.1.3/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- 字体图标 -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        /* 统一定义一个品牌主色，可在此更改 */
+        --brand-color: #4a90e2;
+      }
+
+      body {
+        background-color: #f8f9fa;
+        padding-top: 70px; /* 给固定导航栏留空间 */
+        font-family: "Helvetica Neue", Arial, sans-serif;
+      }
+
+      /* 顶部导航栏 */
+      .navbar {
+        background-color: #fff;
+      }
+      .navbar-brand {
+        color: var(--brand-color) !important;
+        font-weight: 600;
+      }
+      .navbar-nav .nav-link.active {
+        color: var(--brand-color) !important;
+        font-weight: 500;
+      }
+
+      /* 统一按钮样式 */
+      .btn-custom {
+        background-color: var(--brand-color);
+        color: #fff;
+        border: none;
+        border-radius: 30px; /* 圆角按钮 */
+        transition: background-color 0.3s;
+      }
+      .btn-custom:hover {
+        background-color: #3f7ec7;
+      }
+
+      /* Hero Section：顶部大幅介绍区 */
+      .hero-section {
+        background: linear-gradient(135deg, #dbe9ff 0%, #ffffff 100%);
+        padding: 4rem 1rem;
+        text-align: center;
+        border-radius: 0.5rem;
+      }
+      .hero-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+      }
+      .hero-subtitle {
+        font-size: 1.25rem;
+        color: #666;
+        margin-bottom: 2rem;
+      }
+
+      /* 卡片样式 */
+      .function-card {
+        border: none;
+        border-radius: 1rem;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s;
+      }
+      .function-card:hover {
+        transform: translateY(-5px);
+      }
+      .function-card i {
+        font-size: 3rem;
+        color: var(--brand-color);
+      }
+
+      /* 底部信息 */
+      .footer {
+        text-align: center;
+        font-size: 0.875rem;
+        color: #888;
+        margin: 2rem 0 1rem 0;
+      }
+      .footer a {
+        color: #888;
+        text-decoration: none;
+      }
+      .footer a:hover {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- 固定顶部导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-light shadow-sm fixed-top">
+      <div class="container">
+        <a class="navbar-brand" href="/">智能证件照处理工具</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="切换导航"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link active" href="/">首页</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/background">换背景</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/crop">裁剪</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/watermark">加水印</a>
+            </li>
+            <!-- 新增 -->
+            <li class="nav-item">
+              <a class="nav-link" href="/portrait_cutout">人像抠图</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="container mt-4">
+      <div class="hero-section">
+        <h1 class="hero-title">智能证件照处理工具</h1>
+        <p class="hero-subtitle">
+          一站式解决证件照背景更换、裁剪、水印添加等需求，让证件照处理更加轻松、快捷。
+        </p>
+        <a href="#functions" class="btn btn-custom btn-lg">立即体验</a>
+      </div>
+    </div>
+
+    <!-- 功能卡片：使用 Bootstrap Grid 让卡片整齐排列 -->
+    <div
+      class="container"
+      id="functions"
+      style="margin-top: 2rem; margin-bottom: 2rem"
+    >
+      <div class="row row-cols-1 row-cols-md-2 g-4">
+        <!-- 卡片1：证件照换背景 -->
+        <div class="col">
+          <div class="card function-card h-100 text-center">
+            <div class="card-body">
+              <i class="fas fa-fill-drip mb-3"></i>
+              <h5 class="card-title fw-bold">证件照换背景</h5>
+              <p class="card-text text-muted">
+                快速去除背景，随意替换成红底、蓝底、白底...
+              </p>
+              <a href="/background" class="btn btn-custom w-100">进入</a>
+            </div>
+          </div>
+        </div>
+        <!-- 卡片2：证件照裁剪 -->
+        <div class="col">
+          <div class="card function-card h-100 text-center">
+            <div class="card-body">
+              <i class="fas fa-crop-alt mb-3"></i>
+              <h5 class="card-title fw-bold">证件照裁剪</h5>
+              <p class="card-text text-muted">
+                一寸、两寸、三寸，多种规格自由选择
+              </p>
+              <a href="/crop" class="btn btn-custom w-100">进入</a>
+            </div>
+          </div>
+        </div>
+        <!-- 卡片3：证件照加水印 -->
+        <div class="col">
+          <div class="card function-card h-100 text-center">
+            <div class="card-body">
+              <i class="fas fa-water mb-3"></i>
+              <h5 class="card-title fw-bold">证件照加水印</h5>
+              <p class="card-text text-muted">
+                自定义文字水印，保护照片版权和安全
+              </p>
+              <a href="/watermark" class="btn btn-custom w-100">进入</a>
+            </div>
+          </div>
+        </div>
+        <!-- 新增卡片4：人像抠图 -->
+        <div class="col">
+          <div class="card function-card h-100 text-center">
+            <div class="card-body">
+              <i class="fas fa-cut mb-3"></i>
+              <h5 class="card-title fw-bold">人像抠图</h5>
+              <p class="card-text text-muted">
+                智能识别人像并抠出，方便后续处理
+              </p>
+              <a href="/portrait_cutout" class="btn btn-custom w-100">进入</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 使用说明或其他介绍 -->
+    <div class="container">
+      <div class="row">
+        <div class="col-12 col-md-8 mx-auto text-center">
+          <h3 class="fw-bold">使用说明</h3>
+          <p class="text-muted">
+            1. 根据您的需求，选择对应的功能：换背景、裁剪或加水印。<br />
+            2. 上传您的证件照，并根据页面提示进行操作。<br />
+            3. 等待系统处理完成后，您可以直接下载生成的图片。
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部信息 -->
+    <div class="footer">
+      <hr />
+      <p>
+        © 2023 智能证件照处理工具 |
+        <a href="#">使用条款</a> |
+        <a href="#">隐私政策</a>
+      </p>
+    </div>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+  </body>
+</html>
