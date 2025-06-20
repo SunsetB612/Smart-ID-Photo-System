@@ -9,6 +9,8 @@ import torch.nn as nn
 import torchvision.transforms as transforms
 from werkzeug.utils import secure_filename
 import logging
+from rembg import remove
+
 
 # MODNet相关导入
 try:
@@ -82,31 +84,31 @@ def load_modnet_model():
         return None
 
 def preprocess_image_for_modnet(image_path, ref_size=512):
-    """为MODNet预处理图像"""
+    """为MODNet预处理图像，自动调整为32的倍数"""
     try:
         im = Image.open(image_path)
-        
-        # 转换为RGB
+
         if im.mode != 'RGB':
             im = im.convert('RGB')
-        
-        # 调整大小，保持宽高比
+
+        # resize 保持比例 + 裁剪成32的倍数
         im_size = im.size
         ratio = min(ref_size / max(im_size), 1.0)
         new_size = tuple([int(x * ratio) for x in im_size])
-        
+        new_size = (new_size[0] // 32 * 32, new_size[1] // 32 * 32)  # 裁剪到32的倍数
+
         im = im.resize(new_size, Image.LANCZOS)
-        
-        # 转换为tensor
+
         transform = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
         ])
-        
-        return transform(im).unsqueeze(0), im_size
+
+        return transform(im).unsqueeze(0), new_size
     except Exception as e:
         print(f"图像预处理失败: {e}")
         return None, None
+
 
 def modnet_remove_background(image_path):
     """使用MODNet移除背景"""
@@ -177,7 +179,7 @@ def background():
     original_img = None
     removed_bg_img = None
     final_img = None
-    processing_method = None
+    processing_method = "rembg"
 
     if request.method == 'POST':
         file = request.files.get('file')
@@ -190,36 +192,32 @@ def background():
                 original_path = os.path.join(app.config['UPLOAD_FOLDER'], f'original_{filename}')
                 file.save(original_path)
 
-                # 2. 去除背景（使用MODNet或rembg）
-                removed_img = remove_background(original_path)
-                if removed_img is None:
-                    return render_template('background.html', error="背景移除失败，请尝试其他图片")
-                
-                processing_method = "MODNet" if MODNET_AVAILABLE and modnet_model is not None else "rembg"
-                
+                # 2. 使用 rembg 移除背景
+                with open(original_path, 'rb') as f:
+                    input_bytes = f.read()
+
+                output_bytes = remove(input_bytes)  # 调用 rembg
+                removed_img = Image.open(io.BytesIO(output_bytes)).convert('RGBA')
+
                 # 保存去背景图片（用于显示）
                 removed_path = os.path.join(app.config['UPLOAD_FOLDER'], f'removed_{filename}')
-                if removed_img.mode == 'RGBA':
-                    # 创建白色背景用于预览
-                    preview_bg = Image.new("RGB", removed_img.size, (255, 255, 255))
-                    preview_bg.paste(removed_img, mask=removed_img.split()[3])
-                    preview_bg.save(removed_path, 'JPEG')
+                preview_bg = Image.new("RGB", removed_img.size, (255, 255, 255))
+                preview_bg.paste(removed_img, mask=removed_img.split()[3])
+                preview_bg.save(removed_path, 'JPEG')
 
                 # 3. 应用新背景色
-                # 将十六进制颜色转换为RGB
                 if bg_color.startswith('#'):
                     bg_color = bg_color[1:]
                 bg_rgb = tuple(int(bg_color[i:i+2], 16) for i in (0, 2, 4))
-                
-                # 创建新背景
+
                 final_bg = Image.new('RGBA', removed_img.size, bg_rgb + (255,))
                 final_bg.paste(removed_img, mask=removed_img.split()[3])
-                
-                # 保存最终结果
+
+                # 保存最终图
                 final_path = os.path.join(app.config['UPLOAD_FOLDER'], f'final_{filename}')
                 final_bg.convert('RGB').save(final_path, 'JPEG')
 
-                # 4. 设置前端显示路径
+                # 设置图片路径供前端展示
                 original_img = '/' + original_path
                 removed_bg_img = '/' + removed_path
                 final_img = '/' + final_path
