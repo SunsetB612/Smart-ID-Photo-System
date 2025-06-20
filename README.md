@@ -45,15 +45,11 @@ MODNet 是一个基于深度学习的实时人像抠图模型，专门用于人�
 
 1. **创建虚拟环境**
     
-    bash
-    
     ```bash
     conda create -n idphoto python=3.10
     ```
     
 2. **激活虚拟环境**
-    
-    bash
     
     ```bash
     conda activate idphoto
@@ -64,16 +60,12 @@ MODNet 是一个基于深度学习的实时人像抠图模型，专门用于人�
 
 3. **克隆项目**
     
-    bash
-    
     ```bash
     git clone https://github.com/SunsetB612/Smart-ID-Photo-System.git
     cd Smart-ID-Photo-System
     ```
     
 4. **安装依赖**
-    
-    bash
     
     ```bash
     pip install -r requirements.txt
@@ -83,8 +75,6 @@ MODNet 是一个基于深度学习的实时人像抠图模型，专门用于人�
 #### 启动服务
 
 5. **运行应用**
-    
-    bash
     
     ```bash
     python app.py
@@ -104,4 +94,4 @@ MODNet 是一个基于深度学习的实时人像抠图模型，专门用于人�
 
 #### 注意事项
 
-- 首次启动时会自动预加载 MODNet 模型，请耐心等待`
+- 首次启动时可能时间较长，请耐心等待`
